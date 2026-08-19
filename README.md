@@ -33,7 +33,7 @@ Application de suivi de collection pour le jeu de cartes à collectionner Riftbo
 ## Installation
 
 ```bash
-git clone https://github.com/<organisation>/riftbinder.git
+git clone https://github.com/VictorBouveret/riftbinder.git
 cd riftbinder
 npm install
 ```
