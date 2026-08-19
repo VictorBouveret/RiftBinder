@@ -32,19 +32,19 @@ Application de suivi de collection pour le jeu de cartes à collectionner Riftbo
 
 ## Installation
 
-\```bash
+```bash
 git clone https://github.com/<organisation>/riftbinder.git
 cd riftbinder
 npm install
-\```
+```
 
 ## Variables d'environnement
 
 Copier le fichier d'exemple et renseigner les valeurs fournies par Supabase :
 
-\```bash
+```bash
 cp .env.example .env
-\```
+```
 
 | Variable | Description |
 |---|---|
@@ -55,18 +55,18 @@ cp .env.example .env
 
 Le CLI Supabase démarre une stack complète en conteneurs Docker (Postgres, Auth, Studio).
 
-\```bash
+```bash
 npx supabase init      # à exécuter une seule fois
 npx supabase start
-\```
+```
 
 La commande affiche l'URL de l'API et la clé anonyme à renseigner dans `.env`. L'interface d'administration (Studio) est accessible sur `http://localhost:54323`.
 
 Pour arrêter la stack :
 
-\```bash
+```bash
 npx supabase stop
-\```
+```
 
 ## Scripts disponibles
 
@@ -84,14 +84,14 @@ npx supabase stop
 
 Construction et exécution du frontend en conteneur :
 
-\```bash
+```bash
 docker build -t riftbinder .
 docker run -p 8080:80 riftbinder
-\```
+```
 
 ## Structure du projet
 
-\```
+```
 src/
   components/   Composants réutilisables
   pages/        Écrans de l'application
@@ -99,7 +99,7 @@ src/
   hooks/        Hooks React personnalisés
   types/        Types TypeScript partagés
   test/         Configuration Vitest
-\```
+```
 
 ## Licence
 
