@@ -1,68 +1,66 @@
-# Riftbound Tracker
+# RiftBinder
 
-Tracker de collection pour le jeu de cartes Riftbound (Riot Games) — inspiré de Pokécardex.
+Application de suivi de collection pour le jeu de cartes à collectionner Riftbound (Riot Games). Permet de parcourir l'ensemble des cartes disponibles, de gérer sa collection personnelle et sa liste de souhaits, et d'estimer la valeur totale de sa collection.
 
-## Stack
+## Fonctionnalités
 
-- React + TypeScript + Vite
-- Tailwind CSS v4
-- React Router
-- Supabase (auth, Postgres, RLS)
-- Vitest + Testing Library
-- Docker (front) + Supabase CLI (dev local)
+- Parcours et recherche des cartes (nom, numéro, faction, rareté)
+- Gestion de compte utilisateur (authentification par e-mail et OAuth)
+- Suivi de collection avec quantité possédée par carte
+- Liste de souhaits (wishlist)
+- Estimation de la valeur de collection, avec conversion de devise
+- Support multilingue et thème clair/sombre
 
-## Démarrage
+## Stack technique
+
+| Domaine | Technologie |
+|---|---|
+| Frontend | React, TypeScript, Vite |
+| Style | Tailwind CSS |
+| Routing | React Router |
+| Backend / données | Supabase (PostgreSQL, Auth, Row Level Security) |
+| Tests | Vitest, Testing Library |
+| Conteneurisation | Docker, Supabase CLI |
+| CI/CD | GitHub Actions |
+| Déploiement | Vercel |
+
+## Prérequis
+
+- Node.js 22 ou supérieur
+- npm
+- Docker (pour l'environnement Supabase local)
+
+## Installation
 
 ```bash
+git clone https://github.com/VictorBouveret/riftbinder.git
+cd riftbinder
 npm install
-npm run dev
 ```
 
-## Tests
+## Variables d'environnement
 
-```bash
-npm run test        # une passe
-npm run test:watch  # mode watch
-npm run test:ui     # interface Vitest
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-## Docker (front)
-
-```bash
-docker build -t riftbound-tracker .
-docker run -p 8080:80 riftbound-tracker
-```
-
-## Supabase en local (à faire sur ta machine, avec Docker installé)
-
-Le CLI Supabase lance une stack complète en conteneurs (Postgres, Auth, Studio...).
-Ces commandes ne peuvent pas être exécutées dans cet environnement, à lancer chez toi :
-
-```bash
-# Installation du CLI (une fois)
-npm install -D supabase
-
-# Initialisation du projet Supabase (crée le dossier supabase/)
-npx supabase init
-
-# Démarrage de la stack locale (Postgres, Auth, Studio, etc.)
-npx supabase start
-```
-
-`supabase start` affiche à la fin une `API URL` et une `anon key` à copier dans ton `.env` :
+Copier le fichier d'exemple et renseigner les valeurs fournies par Supabase :
 
 ```bash
 cp .env.example .env
-# puis colle VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY
 ```
 
-Le Studio local (interface graphique de la base) est accessible sur `http://localhost:54323`.
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | URL de l'instance Supabase (locale ou distante) |
+| `VITE_SUPABASE_ANON_KEY` | Clé publique anonyme Supabase |
+
+## Environnement Supabase local
+
+Le CLI Supabase démarre une stack complète en conteneurs Docker (Postgres, Auth, Studio).
+
+```bash
+npx supabase init      # à exécuter une seule fois
+npx supabase start
+```
+
+La commande affiche l'URL de l'API et la clé anonyme à renseigner dans `.env`. L'interface d'administration (Studio) est accessible sur `http://localhost:54323`.
 
 Pour arrêter la stack :
 
@@ -70,14 +68,39 @@ Pour arrêter la stack :
 npx supabase stop
 ```
 
-## Structure
+## Scripts disponibles
+
+| Commande | Description |
+|---|---|
+| `npm run dev` | Démarre le serveur de développement |
+| `npm run build` | Build de production |
+| `npm run preview` | Prévisualise le build de production |
+| `npm run lint` | Analyse statique du code |
+| `npm run test` | Exécute les tests |
+| `npm run test:watch` | Exécute les tests en mode watch |
+| `npm run test:ui` | Interface graphique Vitest |
+
+## Docker
+
+Construction et exécution du frontend en conteneur :
+
+```bash
+docker build -t riftbinder .
+docker run -p 8080:80 riftbinder
+```
+
+## Structure du projet
 
 ```
 src/
-  components/   composants réutilisables
-  pages/        écrans (Accueil, CardDetail, CardList, Collection, Wishlist, Settings, Login, Signup)
-  lib/          client Supabase, helpers
-  hooks/        hooks personnalisés
-  types/        types partagés
-  test/         setup Vitest
+  components/   Composants réutilisables
+  pages/        Écrans de l'application
+  lib/          Client Supabase et fonctions utilitaires
+  hooks/        Hooks React personnalisés
+  types/        Types TypeScript partagés
+  test/         Configuration Vitest
 ```
+
+## Licence
+
+Projet réalisé dans le cadre d'une certification RNCP. Aucune licence open source définie à ce stade.
