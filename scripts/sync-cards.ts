@@ -72,6 +72,11 @@ function normalizeRarity(raw: string | null, variant: string): Rarity {
   if (variant === 'a' || variant === 'star') return 'showcase'
 
   const normalized = (raw ?? '').toLowerCase()
+
+  // Certaines cartes sont marquées "showcase" directement dans la rareté
+  // brute de l'API, même en variante standard (ex. certains sets promo).
+  if (normalized === 'showcase') return 'showcase'
+
   if (['common', 'uncommon', 'rare', 'epic'].includes(normalized)) {
     return normalized as Rarity
   }
@@ -80,30 +85,87 @@ function normalizeRarity(raw: string | null, variant: string): Rarity {
   return 'common'
 }
 
+// RiftScribe ne fournit aucune métadonnée de "total officiel de cartes" par
+// set. Par défaut on estime ce total en excluant les cartes showcase du
+// calcul (voir plus bas), mais cette heuristique peut se tromper pour des
+// sets avec des cas particuliers. Renseigne ici le vrai total dès que tu le
+// connais (wiki communautaire, Cardmarket...) pour le fiabiliser set par
+// set, sans dépendre uniquement de l'heuristique.
+// RiftScribe ne fournit pas de nom complet par set. Noms anglais confirmés
+// (sources communautaires) ; pas de traduction française officielle connue
+// à ce jour pour Riftbound — on utilise l'anglais en attendant, à corriger
+// ici si une localisation française sort un jour.
+const SET_NAMES: Record<string, { en: string; fr: string }> = {
+  OGN: { en: 'Origins', fr: 'Origines' },
+  OGS: { en: 'Origins: Proving Grounds', fr: 'Origins: Proving Grounds' },
+  SFD: { en: 'Spirit Forged', fr: 'Armes Spirituelles' },
+  UNL: { en: 'Unleashed', fr: 'Déchaînement' },
+  VEN: { en: 'Vendetta', fr: 'Vendetta' },
+}
+
+const OFFICIAL_SET_TOTALS: Record<string, number> = {
+  OGN: 298, // Origins — confirmé (Cardmarket)
+  SFD: 221, // Spiritforged — confirmé (Cardmarket)
+  UNL: 219, // Unleashed — confirmé (Cardmarket)
+  VEN: 166, // Vendetta — confirmé (dénominateur imprimé sur les cartes du set)
+}
+
 async function main() {
   console.log('Récupération des cartes depuis RiftScribe...')
   const rawCards = await fetchAllCards()
 
   // On exclut les tokens pour ce premier import : ils ne sont généralement
   // pas collectionnés/tradés de la même façon que les cartes classiques.
-  const cards = rawCards.filter((c) => !c.variant.startsWith('t'))
-  console.log(`${cards.length} cartes retenues (hors tokens).`)
+  const filteredCards = rawCards.filter((c) => !c.variant.startsWith('t'))
+  console.log(`${filteredCards.length} cartes retenues (hors tokens).`)
+
+  // On calcule la rareté normalisée en amont : on en a besoin à la fois
+  // pour le calcul du total_cards (étape suivante) et pour l'upsert final.
+  const cards = filteredCards.map((c) => ({
+    ...c,
+    normalizedRarity: normalizeRarity(c.rarity, c.variant),
+  }))
 
   // Le "total_cards" d'un set = le plus grand collector_number parmi les
-  // cartes de base (variant vide). Sert à calculer côté front si une carte
-  // showcase est "overnumbered" (collector_number > total_cards du set).
-  const setTotals = new Map<string, number>()
+  // cartes "normales" (hors showcase), sauf si une valeur officielle a été
+  // renseignée manuellement dans OFFICIAL_SET_TOTALS ci-dessus.
+  const heuristicTotals = new Map<string, number>()
   for (const c of cards) {
-    if (c.variant === '') {
-      setTotals.set(c.set_id, Math.max(setTotals.get(c.set_id) ?? 0, c.collector_number))
+    if (c.normalizedRarity !== 'showcase') {
+      heuristicTotals.set(c.set_id, Math.max(heuristicTotals.get(c.set_id) ?? 0, c.collector_number))
+    }
+  }
+
+  const setTotals = new Map<string, number>()
+  for (const code of heuristicTotals.keys()) {
+    const official = OFFICIAL_SET_TOTALS[code]
+    if (official !== undefined) {
+      setTotals.set(code, official)
+    } else {
+      setTotals.set(code, heuristicTotals.get(code)!)
+      console.warn(
+        `  Aucun total officiel pour le set "${code}" : repli sur l'heuristique (${heuristicTotals.get(code)}). À vérifier/renseigner dans OFFICIAL_SET_TOTALS si besoin.`,
+      )
     }
   }
 
   console.log(`${setTotals.size} sets détectés, upsert en base...`)
   for (const [code, totalCards] of setTotals) {
-    const { error } = await supabase
-      .from('sets')
-      .upsert({ code, name: code, total_cards: totalCards }, { onConflict: 'code' })
+    const names = SET_NAMES[code]
+    if (!names) {
+      console.warn(`  Aucun nom connu pour le set "${code}", repli sur le code brut.`)
+    }
+
+    const { error } = await supabase.from('sets').upsert(
+      {
+        code,
+        name: names?.en ?? code,
+        name_en: names?.en ?? code,
+        name_fr: names?.fr ?? code,
+        total_cards: totalCards,
+      },
+      { onConflict: 'code' },
+    )
     if (error) throw error
   }
 
@@ -126,11 +188,12 @@ async function main() {
         variant: c.variant,
         name: c.name,
         faction: c.faction,
-        rarity: normalizeRarity(c.rarity, c.variant),
+        rarity: c.normalizedRarity,
         card_type: c.type,
         illustrator: c.art?.artist ?? null,
         image_url: c.image,
         is_signed: c.variant === 'star',
+        is_overnumbered: c.collector_number > (setTotals.get(c.set_id) ?? c.collector_number),
       }
     })
 
