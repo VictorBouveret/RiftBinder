@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { RARITY_STYLES } from '../lib/rarity'
@@ -139,6 +140,7 @@ function useOwnership(cardId: string | undefined) {
 }
 
 export function CardDetail() {
+  const { t } = useTranslation()
   const { cardId } = useParams<{ cardId: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -148,18 +150,16 @@ export function CardDetail() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-sm text-zinc-400">
-        Chargement...
-      </div>
+      <div className="px-4 py-16 text-center text-sm text-zinc-400">{t('common.loading')}</div>
     )
   }
 
   if (notFound || !card) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-950 text-zinc-100">
-        <p className="text-sm text-zinc-400">Carte introuvable.</p>
+      <div className="flex flex-col items-center gap-3 px-4 py-16 text-center text-zinc-100">
+        <p className="text-sm text-zinc-400">{t('cardDetail.notFound')}</p>
         <Link to="/" className="text-sm underline">
-          Retour à l'accueil
+          {t('cardDetail.backToHome')}
         </Link>
       </div>
     )
@@ -177,13 +177,13 @@ export function CardDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 px-4 py-6 text-zinc-100">
+    <div className="px-4 py-6 text-zinc-100">
       <div className="mx-auto max-w-md">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-start gap-2.5">
             <button
               onClick={() => navigate(-1)}
-              aria-label="Retour"
+              aria-label={t('common.back')}
               className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md border border-zinc-800"
             >
               ←
@@ -199,14 +199,14 @@ export function CardDetail() {
           <div className="flex gap-1.5">
             <button
               onClick={() => requireAuth(toggleWishlist)}
-              aria-label="Ajouter à la wishlist"
+              aria-label={t('cardDetail.addToWishlist')}
               className={`flex h-8 w-8 items-center justify-center rounded-md border border-zinc-800 ${inWishlist ? 'bg-zinc-100 text-zinc-900' : ''}`}
             >
               ♥
             </button>
             <button
               onClick={() => requireAuth(() => setQuantityTo(quantity + 1))}
-              aria-label="Ajouter à la collection"
+              aria-label={t('cardDetail.addToCollection')}
               className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-800"
             >
               +
@@ -216,16 +216,16 @@ export function CardDetail() {
 
         <div className="mb-4 flex flex-wrap gap-2">
           <span className={`rounded px-2.5 py-1 text-xs ${rarityStyle.bg} ${rarityStyle.text}`}>
-            {rarityStyle.label}
+            {t(`rarity.${card.rarity}`)}
           </span>
           {card.rarity === 'showcase' && card.is_overnumbered && (
             <span className="rounded border border-zinc-800 px-2.5 py-1 text-xs text-zinc-300">
-              Overnumbered
+              {t('cardDetail.overnumber')}
             </span>
           )}
           {card.is_signed && (
             <span className="rounded border border-zinc-800 px-2.5 py-1 text-xs text-zinc-300">
-              Signée
+              {t('cardDetail.signed')}
             </span>
           )}
         </div>
@@ -240,11 +240,11 @@ export function CardDetail() {
 
         {user && (
           <div className="mb-4 flex items-center justify-between rounded-md bg-zinc-900 px-4 py-3">
-            <span className="text-sm text-zinc-400">Possédée</span>
+            <span className="text-sm text-zinc-400">{t('cardDetail.owned')}</span>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setQuantityTo(Math.max(0, quantity - 1))}
-                aria-label="Retirer un exemplaire"
+                aria-label={t('cardDetail.removeCopy')}
                 className="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-800"
               >
                 −
@@ -252,7 +252,7 @@ export function CardDetail() {
               <span className="min-w-4 text-center text-sm font-medium">{quantity}</span>
               <button
                 onClick={() => setQuantityTo(quantity + 1)}
-                aria-label="Ajouter un exemplaire"
+                aria-label={t('cardDetail.addToCollection')}
                 className="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-800"
               >
                 +
@@ -263,16 +263,16 @@ export function CardDetail() {
 
         {card.illustrator && (
           <div className="mb-4 border-t border-zinc-800 pt-3">
-            <p className="text-xs text-zinc-400">Illustrateur</p>
+            <p className="text-xs text-zinc-400">{t('cardDetail.illustrator')}</p>
             <p className="text-sm">{card.illustrator}</p>
           </div>
         )}
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-zinc-400">Prix actuel</p>
+            <p className="text-xs text-zinc-400">{t('cardDetail.currentPrice')}</p>
             <p className="text-lg font-medium">
-              {price ? `${price.price.toFixed(2)} ${price.currency}` : 'Non renseigné'}
+              {price ? `${price.price.toFixed(2)} ${price.currency}` : t('cardDetail.notAvailable')}
             </p>
           </div>
           <a
@@ -281,7 +281,7 @@ export function CardDetail() {
             rel="noreferrer"
             className="flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-2 text-sm"
           >
-            Voir sur Cardmarket ↗
+            {t('cardDetail.viewOnCardmarket')} ↗
           </a>
         </div>
       </div>

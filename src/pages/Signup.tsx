@@ -1,20 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../contexts/AuthContext'
 
 const MIN_PASSWORD_LENGTH = 8
 
-function getPasswordError(password: string): string | null {
-  if (password.length < MIN_PASSWORD_LENGTH) {
-    return `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères.`
-  }
-  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-    return 'Le mot de passe doit contenir au moins une lettre et un chiffre.'
-  }
-  return null
-}
-
 export function Signup() {
+  const { t } = useTranslation()
   const { signUp } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,6 +14,16 @@ export function Signup() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmationSent, setConfirmationSent] = useState(false)
+
+  function getPasswordError(pw: string): string | null {
+    if (pw.length < MIN_PASSWORD_LENGTH) {
+      return t('auth.passwordTooShort', { count: MIN_PASSWORD_LENGTH })
+    }
+    if (!/[a-zA-Z]/.test(pw) || !/[0-9]/.test(pw)) {
+      return t('auth.passwordNeedsLetterAndDigit')
+    }
+    return null
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -34,7 +36,7 @@ export function Signup() {
     }
 
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.')
+      setError(t('auth.passwordMismatch'))
       return
     }
 
@@ -54,11 +56,8 @@ export function Signup() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
         <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center">
-          <h1 className="mb-2 text-lg font-medium text-zinc-100">Vérifie ta boîte mail</h1>
-          <p className="text-sm text-zinc-400">
-            Un email de confirmation a été envoyé à {email}. Clique sur le lien pour activer ton
-            compte.
-          </p>
+          <h1 className="mb-2 text-lg font-medium text-zinc-100">{t('auth.checkEmailTitle')}</h1>
+          <p className="text-sm text-zinc-400">{t('auth.checkEmailBody', { email })}</p>
         </div>
       </div>
     )
@@ -67,12 +66,12 @@ export function Signup() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-        <h1 className="mb-6 text-lg font-medium text-zinc-100">Créer un compte</h1>
+        <h1 className="mb-6 text-lg font-medium text-zinc-100">{t('auth.signupTitle')}</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="email" className="mb-1 block text-xs text-zinc-400">
-              Email
+              {t('auth.email')}
             </label>
             <input
               id="email"
@@ -87,7 +86,7 @@ export function Signup() {
 
           <div>
             <label htmlFor="password" className="mb-1 block text-xs text-zinc-400">
-              Mot de passe
+              {t('auth.password')}
             </label>
             <input
               id="password"
@@ -98,14 +97,12 @@ export function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500"
             />
-            <p className="mt-1 text-[11px] text-zinc-500">
-              8 caractères minimum, au moins une lettre et un chiffre.
-            </p>
+            <p className="mt-1 text-[11px] text-zinc-500">{t('auth.passwordHint')}</p>
           </div>
 
           <div>
             <label htmlFor="confirmPassword" className="mb-1 block text-xs text-zinc-400">
-              Confirmer le mot de passe
+              {t('auth.confirmPassword')}
             </label>
             <input
               id="confirmPassword"
@@ -125,14 +122,14 @@ export function Signup() {
             disabled={submitting}
             className="mt-2 rounded-md bg-zinc-100 py-2 text-sm font-medium text-zinc-900 disabled:opacity-50"
           >
-            {submitting ? 'Création...' : 'Créer un compte'}
+            {submitting ? t('auth.signingUp') : t('auth.signupButton')}
           </button>
         </form>
 
         <p className="mt-4 text-center text-xs text-zinc-500">
-          Déjà un compte ?{' '}
+          {t('auth.hasAccount')}{' '}
           <Link to="/login" className="text-zinc-300 underline">
-            Se connecter
+            {t('home.login')}
           </Link>
         </p>
       </div>

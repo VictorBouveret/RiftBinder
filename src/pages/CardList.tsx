@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { CardTile } from '../components/CardTile'
 import type { CardSet, Rarity } from '../types/database'
 
 const PAGE_SIZE = 30
@@ -21,26 +23,29 @@ type ListedCard = {
 
 type RarityFilterValue = Rarity | 'signed' | 'overnumbered'
 
-const RARITY_OPTIONS: { value: RarityFilterValue; label: string }[] = [
-  { value: 'common', label: 'Commune' },
-  { value: 'uncommon', label: 'Peu commune' },
-  { value: 'rare', label: 'Rare' },
-  { value: 'epic', label: 'Épique' },
-  { value: 'showcase', label: 'Showcase' },
-  { value: 'signed', label: 'Signée' },
-  { value: 'overnumbered', label: 'Overnumbered' },
+// Ordre d'affichage uniquement : les libellés viennent de la traduction
+// (clé rarity.<value>), pas codés en dur ici.
+const RARITY_FILTER_VALUES: RarityFilterValue[] = [
+  'common',
+  'uncommon',
+  'rare',
+  'epic',
+  'showcase',
+  'overnumbered',
+  'signed',
 ]
 
 type SortValue = 'name_asc' | 'price_asc' | 'price_desc' | 'rarity_asc' | 'rarity_desc' | 'number_asc' | 'number_desc'
 
-const SORT_OPTIONS: { value: SortValue; label: string }[] = [
-  { value: 'name_asc', label: 'Nom (A → Z)' },
-  { value: 'number_asc', label: 'Numéro (croissant)' },
-  { value: 'number_desc', label: 'Numéro (décroissant)' },
-  { value: 'rarity_desc', label: 'Rareté (plus rare → moins rare)' },
-  { value: 'rarity_asc', label: 'Rareté (moins rare → plus rare)' },
-  { value: 'price_asc', label: 'Prix (croissant)' },
-  { value: 'price_desc', label: 'Prix (décroissant)' },
+// Idem : ordre + clé de traduction associée, pas de libellé en dur.
+const SORT_VALUES: { value: SortValue; labelKey: string }[] = [
+  { value: 'name_asc', labelKey: 'cardList.sortName' },
+  { value: 'number_asc', labelKey: 'cardList.sortNumberAsc' },
+  { value: 'number_desc', labelKey: 'cardList.sortNumberDesc' },
+  { value: 'rarity_desc', labelKey: 'cardList.sortRarityDesc' },
+  { value: 'rarity_asc', labelKey: 'cardList.sortRarityAsc' },
+  { value: 'price_asc', labelKey: 'cardList.sortPriceAsc' },
+  { value: 'price_desc', labelKey: 'cardList.sortPriceDesc' },
 ]
 
 function useSetsList() {
@@ -131,7 +136,7 @@ function useCardList(params: { name: string; setCode: string; rarity: string; so
       }
 
       if (debouncedName.trim()) {
-        query = query.ilike('name', `%${debouncedName.trim()}%`)
+        query = query.ilike('search_text', `%${debouncedName.trim()}%`)
       }
       if (params.setCode) {
         query = query.eq('set.code', params.setCode)
@@ -171,12 +176,6 @@ function useCardList(params: { name: string; setCode: string; rarity: string; so
   }, [debouncedName, params.setCode, params.rarity, params.sort, page])
 
   return { cards, loading, hasMore, page, loadMore: () => setPage((p) => p + 1) }
-}
-
-const VARIANT_LABELS: Record<string, string> = {
-  '': '',
-  a: 'Alt art',
-  star: 'Signature',
 }
 
 // Une seule requête groupée pour savoir quelles cartes (parmi celles
@@ -238,7 +237,7 @@ function useOwnershipMap(cardIds: string[]) {
   return { wishlistIds, ownedIds, toggleWishlist, addToCollection }
 }
 
-type CardTileProps = {
+type BrowseCardTileProps = {
   card: ListedCard
   isWishlisted: boolean
   isOwned: boolean
@@ -247,86 +246,42 @@ type CardTileProps = {
   onNavigateAway: () => void
 }
 
-function CardTile({ card, isWishlisted, isOwned, onToggleWishlist, onAddToCollection, onNavigateAway }: CardTileProps) {
+function BrowseCardTile({
+  card,
+  isWishlisted,
+  isOwned,
+  onToggleWishlist,
+  onAddToCollection,
+  onNavigateAway,
+}: BrowseCardTileProps) {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  function toggleWishlist(e: React.MouseEvent) {
-    e.preventDefault()
-    if (!user) {
-      navigate('/login')
-      return
+  function withAuth(action: (cardId: string) => void) {
+    return () => {
+      if (!user) {
+        navigate('/login')
+        return
+      }
+      action(card.id)
     }
-    onToggleWishlist(card.id)
   }
-
-  function addToCollection(e: React.MouseEvent) {
-    e.preventDefault()
-    if (!user) {
-      navigate('/login')
-      return
-    }
-    onAddToCollection(card.id)
-  }
-
-  const label = VARIANT_LABELS[card.variant]
-  const collectorLabel = `${card.set.code}-${String(card.collector_number).padStart(3, '0')}`
 
   return (
-    <Link
-      to={`/cards/${card.external_id ?? card.id}`}
-      onClick={onNavigateAway}
-      className="relative block aspect-[3/4] overflow-hidden rounded-md border border-zinc-800 bg-zinc-900"
-    >
-      {card.image_url ? (
-        <img src={card.image_url} alt={card.name} className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full items-center justify-center text-[11px] text-zinc-600">
-          {card.name}
-        </div>
-      )}
-
-      {isOwned && (
-        <span className="absolute left-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] text-emerald-950">
-          ✓
-        </span>
-      )}
-
-      <div className="absolute bottom-1.5 right-1.5 flex flex-col items-stretch gap-1">
-        <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded bg-white/80 px-1.5 py-0.5">
-          <span className="text-[9px] font-medium text-zinc-900">{collectorLabel}</span>
-          <span className="text-[10px] font-medium text-zinc-900">
-            {card.card_prices ? `${card.card_prices.price.toFixed(2)} €` : '—'}
-          </span>
-        </div>
-        <div className="flex gap-1">
-          <button
-            onClick={toggleWishlist}
-            aria-label="Ajouter à la wishlist"
-            className={`flex-1 rounded py-1 text-[13px] ${isWishlisted ? 'bg-zinc-900 text-white' : 'bg-white/80 text-zinc-900'}`}
-          >
-            ♥
-          </button>
-          <button
-            onClick={addToCollection}
-            aria-label="Ajouter à la collection"
-            className="flex-1 rounded bg-white/80 py-1 text-[13px] text-zinc-900"
-          >
-            +
-          </button>
-        </div>
-      </div>
-
-      {label && (
-        <span className="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white">
-          {label}
-        </span>
-      )}
-    </Link>
+    <CardTile
+      card={card}
+      mode="browse"
+      isWishlisted={isWishlisted}
+      isOwned={isOwned}
+      onToggleWishlist={withAuth(onToggleWishlist)}
+      onAddToCollection={withAuth(onAddToCollection)}
+      onNavigateAway={onNavigateAway}
+    />
   )
 }
 
 export function CardList() {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const sets = useSetsList()
 
@@ -396,26 +351,17 @@ export function CardList() {
   const activeSet = useMemo(() => sets.find((s) => s.code === setCode), [sets, setCode])
 
   return (
-    <div className="min-h-screen bg-zinc-950 px-4 py-6 text-zinc-100">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-3 flex items-center gap-2.5">
-          <Link
-            to="/"
-            aria-label="Retour"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-800"
-          >
-            ←
-          </Link>
-          <span className="text-base font-medium">
-            Toutes les cartes{activeSet ? ` — ${activeSet.name}` : ''}
-          </span>
-        </div>
+    <div className="px-4 py-6 text-zinc-100">
+      <div className="mx-auto max-w-6xl">
+        <h1 className="mb-3 text-base font-medium">
+          {t('cardList.allCards')}{activeSet ? ` — ${activeSet.name}` : ''}
+        </h1>
 
         <input
           type="text"
           value={name}
           onChange={(e) => updateParam('name', e.target.value)}
-          placeholder="Rechercher une carte"
+          placeholder={t('common.search')}
           className="mb-2 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none focus:border-zinc-500"
         />
 
@@ -425,7 +371,7 @@ export function CardList() {
             onChange={(e) => updateParam('set', e.target.value)}
             className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-100"
           >
-            <option value="">Tous les sets</option>
+            <option value="">{t('cardList.allSets')}</option>
             {sets.map((s) => (
               <option key={s.id} value={s.code}>
                 {s.code}
@@ -437,10 +383,10 @@ export function CardList() {
             onChange={(e) => updateParam('rarity', e.target.value)}
             className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-100"
           >
-            <option value="">Toutes raretés</option>
-            {RARITY_OPTIONS.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
+            <option value="">{t('cardList.allRarities')}</option>
+            {RARITY_FILTER_VALUES.map((v) => (
+              <option key={v} value={v}>
+                {t(`rarity.${v}`)}
               </option>
             ))}
           </select>
@@ -449,17 +395,17 @@ export function CardList() {
             onChange={(e) => updateParam('sort', e.target.value)}
             className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-100"
           >
-            {SORT_OPTIONS.map((s) => (
+            {SORT_VALUES.map((s) => (
               <option key={s.value} value={s.value}>
-                {s.label}
+                {t(s.labelKey)}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {cards.map((card) => (
-            <CardTile
+            <BrowseCardTile
               key={card.id}
               card={card}
               isWishlisted={wishlistIds.has(card.id)}
@@ -472,7 +418,7 @@ export function CardList() {
         </div>
 
         {!loading && cards.length === 0 && (
-          <p className="mt-8 text-center text-sm text-zinc-500">Aucune carte trouvée.</p>
+          <p className="mt-8 text-center text-sm text-zinc-500">{t('cardList.noCardsFound')}</p>
         )}
 
         {hasMore && (
@@ -480,7 +426,7 @@ export function CardList() {
             onClick={loadMore}
             className="mx-auto mt-6 block rounded-md border border-zinc-800 px-4 py-2 text-sm"
           >
-            Charger plus
+            {t('cardList.loadMore')}
           </button>
         )}
       </div>

@@ -1,0 +1,116 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "cards": "Cartes",
+    "collection": "Collection",
+    "wishlist": "Wishlist",
+    "settings": "Paramètres"
+  },
+  "common": {
+    "back": "Retour",
+    "loading": "Chargement...",
+    "search": "Rechercher une carte",
+    "settings": "Paramètres"
+  },
+  "home": {
+    "title": "Accueil",
+    "login": "Se connecter",
+    "signup": "Créer un compte",
+    "logout": "Se déconnecter",
+    "myCollection": "Ma collection",
+    "myWishlist": "Ma wishlist",
+    "ownedCount": "{{owned}} sur {{total}} cartes possédées",
+    "wishlistCount": "{{count}} cartes en attente",
+    "loginToView": "Connecte-toi pour voir ta collection",
+    "loginToViewWishlist": "Connecte-toi pour voir ta wishlist",
+    "series": "Séries",
+    "searchSeries": "Rechercher une série",
+    "noResults": "Aucun résultat.",
+    "noSeriesFound": "Aucune série trouvée.",
+    "unknownYear": "Année inconnue"
+  },
+  "auth": {
+    "loginTitle": "Se connecter",
+    "signupTitle": "Créer un compte",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "passwordHint": "8 caractères minimum, au moins une lettre et un chiffre.",
+    "loginButton": "Se connecter",
+    "loggingIn": "Connexion...",
+    "signupButton": "Créer un compte",
+    "signingUp": "Création...",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "invalidCredentials": "Identifiants incorrects.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "passwordTooShort": "Le mot de passe doit contenir au moins {{count}} caractères.",
+    "passwordNeedsLetterAndDigit": "Le mot de passe doit contenir au moins une lettre et un chiffre.",
+    "checkEmailTitle": "Vérifie ta boîte mail",
+    "checkEmailBody": "Un email de confirmation a été envoyé à {{email}}. Clique sur le lien pour activer ton compte."
+  },
+  "cardDetail": {
+    "notFound": "Carte introuvable.",
+    "backToHome": "Retour à l'accueil",
+    "addToWishlist": "Ajouter à la wishlist",
+    "addToCollection": "Ajouter à la collection",
+    "removeCopy": "Retirer un exemplaire",
+    "owned": "Possédée",
+    "illustrator": "Illustrateur",
+    "currentPrice": "Prix actuel",
+    "notAvailable": "Non renseigné",
+    "viewOnCardmarket": "Voir sur Cardmarket",
+    "overnumber": "Overnumber",
+    "signed": "Signée"
+  },
+  "cardList": {
+    "allCards": "Toutes les cartes",
+    "sortName": "Nom (A → Z)",
+    "sortNumberAsc": "Numéro (croissant)",
+    "sortNumberDesc": "Numéro (décroissant)",
+    "sortRarityDesc": "Rareté (plus rare → moins rare)",
+    "sortRarityAsc": "Rareté (moins rare → plus rare)",
+    "sortPriceAsc": "Prix (croissant)",
+    "sortPriceDesc": "Prix (décroissant)",
+    "allSets": "Tous les sets",
+    "allRarities": "Toutes raretés",
+    "noCardsFound": "Aucune carte trouvée.",
+    "loadMore": "Charger plus"
+  },
+  "rarity": {
+    "common": "Commune",
+    "uncommon": "Peu commune",
+    "rare": "Rare",
+    "epic": "Épique",
+    "showcase": "Showcase",
+    "overnumbered": "Overnumber",
+    "signed": "Signée"
+  },
+  "collectionGrid": {
+    "myCollection": "Ma collection",
+    "myWishlist": "Ma wishlist",
+    "emptyCollection": "Aucune carte dans ta collection pour l'instant.",
+    "emptyWishlist": "Aucune carte dans ta wishlist pour l'instant.",
+    "sortRecent": "Récemment ajoutées",
+    "gridSmall": "Grille petite",
+    "gridMedium": "Grille moyenne",
+    "gridLarge": "Grille grande",
+    "removeFromCollection": "Retirer de la collection",
+    "removeFromWishlist": "Retirer de la wishlist"
+  },
+  "variant": {
+    "altArt": "Alt art",
+    "signature": "Signature"
+  },
+  "settings": {
+    "language": "Langue",
+    "currency": "Devise",
+    "theme": "Thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeAuto": "Auto",
+    "themeNotApplied": "Ce réglage est sauvegardé, mais l'app reste en thème sombre pour l'instant — l'appliquer visuellement à toute l'application est un chantier séparé.",
+    "account": "Compte",
+    "logout": "Se déconnecter"
+  }
+}

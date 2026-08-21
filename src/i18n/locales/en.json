@@ -1,0 +1,116 @@
+{
+  "nav": {
+    "home": "Home",
+    "cards": "Cards",
+    "collection": "Collection",
+    "wishlist": "Wishlist",
+    "settings": "Settings"
+  },
+  "common": {
+    "back": "Back",
+    "loading": "Loading...",
+    "search": "Search for a card",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Home",
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Log out",
+    "myCollection": "My collection",
+    "myWishlist": "My wishlist",
+    "ownedCount": "{{owned}} of {{total}} cards owned",
+    "wishlistCount": "{{count}} cards wanted",
+    "loginToView": "Log in to see your collection",
+    "loginToViewWishlist": "Log in to see your wishlist",
+    "series": "Sets",
+    "searchSeries": "Search for a set",
+    "noResults": "No results.",
+    "noSeriesFound": "No sets found.",
+    "unknownYear": "Unknown year"
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "signupTitle": "Create an account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "passwordHint": "At least 8 characters, with a letter and a digit.",
+    "loginButton": "Log in",
+    "loggingIn": "Logging in...",
+    "signupButton": "Create account",
+    "signingUp": "Creating...",
+    "noAccount": "Don't have an account yet?",
+    "hasAccount": "Already have an account?",
+    "invalidCredentials": "Incorrect credentials.",
+    "passwordMismatch": "Passwords don't match.",
+    "passwordTooShort": "Password must be at least {{count}} characters.",
+    "passwordNeedsLetterAndDigit": "Password must contain at least one letter and one digit.",
+    "checkEmailTitle": "Check your inbox",
+    "checkEmailBody": "A confirmation email was sent to {{email}}. Click the link to activate your account."
+  },
+  "cardDetail": {
+    "notFound": "Card not found.",
+    "backToHome": "Back to home",
+    "addToWishlist": "Add to wishlist",
+    "addToCollection": "Add to collection",
+    "removeCopy": "Remove a copy",
+    "owned": "Owned",
+    "illustrator": "Illustrator",
+    "currentPrice": "Current price",
+    "notAvailable": "Not available",
+    "viewOnCardmarket": "View on Cardmarket",
+    "overnumber": "Overnumber",
+    "signed": "Signed"
+  },
+  "cardList": {
+    "allCards": "All cards",
+    "sortName": "Name (A → Z)",
+    "sortNumberAsc": "Number (ascending)",
+    "sortNumberDesc": "Number (descending)",
+    "sortRarityDesc": "Rarity (rarest → most common)",
+    "sortRarityAsc": "Rarity (most common → rarest)",
+    "sortPriceAsc": "Price (ascending)",
+    "sortPriceDesc": "Price (descending)",
+    "allSets": "All sets",
+    "allRarities": "All rarities",
+    "noCardsFound": "No cards found.",
+    "loadMore": "Load more"
+  },
+  "rarity": {
+    "common": "Common",
+    "uncommon": "Uncommon",
+    "rare": "Rare",
+    "epic": "Epic",
+    "showcase": "Showcase",
+    "overnumbered": "Overnumber",
+    "signed": "Signed"
+  },
+  "collectionGrid": {
+    "myCollection": "My collection",
+    "myWishlist": "My wishlist",
+    "emptyCollection": "No cards in your collection yet.",
+    "emptyWishlist": "No cards in your wishlist yet.",
+    "sortRecent": "Recently added",
+    "gridSmall": "Small grid",
+    "gridMedium": "Medium grid",
+    "gridLarge": "Large grid",
+    "removeFromCollection": "Remove from collection",
+    "removeFromWishlist": "Remove from wishlist"
+  },
+  "variant": {
+    "altArt": "Alt art",
+    "signature": "Signature"
+  },
+  "settings": {
+    "language": "Language",
+    "currency": "Currency",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeAuto": "Auto",
+    "themeNotApplied": "This setting is saved, but the app stays dark-themed for now — actually applying it across the whole app is a separate task.",
+    "account": "Account",
+    "logout": "Log out"
+  }
+}

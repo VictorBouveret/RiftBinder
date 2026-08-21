@@ -24,6 +24,7 @@ export type Card = {
   image_url: string | null
   is_signed: boolean
   is_overnumbered: boolean
+  alt_names: string[]
 }
 
 export type CardWithSet = Card & { set: Pick<CardSet, 'code' | 'name'> }

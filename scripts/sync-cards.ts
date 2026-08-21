@@ -96,7 +96,7 @@ function normalizeRarity(raw: string | null, variant: string): Rarity {
 // à ce jour pour Riftbound — on utilise l'anglais en attendant, à corriger
 // ici si une localisation française sort un jour.
 const SET_NAMES: Record<string, { en: string; fr: string }> = {
-  OGN: { en: 'Origins', fr: 'Origines' },
+  OGN: { en: 'Origins', fr: 'Origine' },
   OGS: { en: 'Origins: Proving Grounds', fr: 'Origins: Proving Grounds' },
   SFD: { en: 'Spirit Forged', fr: 'Armes Spirituelles' },
   UNL: { en: 'Unleashed', fr: 'Déchaînement' },
@@ -108,6 +108,28 @@ const OFFICIAL_SET_TOTALS: Record<string, number> = {
   SFD: 221, // Spiritforged — confirmé (Cardmarket)
   UNL: 219, // Unleashed — confirmé (Cardmarket)
   VEN: 166, // Vendetta — confirmé (dénominateur imprimé sur les cartes du set)
+}
+
+// Dates de sortie officielles, non fournies par RiftScribe. Sources
+// communautaires (Wikipedia). OGS (Origins: Proving Grounds) est un
+// produit compagnon d'Origins — date supposée identique, à vérifier.
+const SET_RELEASE_DATES: Record<string, string> = {
+  OGN: '2025-10-31', // Origins
+  OGS: '2025-10-31', // Origins: Proving Grounds — supposé, à confirmer
+  SFD: '2026-02-13', // Spiritforged
+  UNL: '2026-05-08', // Unleashed
+  VEN: '2026-07-31', // Vendetta
+}
+
+// Certaines cartes ont un nom flavor qui ne contient pas le nom du champion
+// associé (ex. "Nine-Tailed Fox" est en réalité Ahri) : RiftScribe ne
+// fournit cette info nulle part dans son API en masse, donc on maintient
+// cette liste à la main au fil des cartes découvertes. Clé = nom exact de
+// la carte tel qu'il apparaît dans l'API, valeur = noms à ajouter à la
+// recherche.
+const CARD_ALIASES: Record<string, string[]> = {
+  'Nine-Tailed Fox': ['Ahri'],
+  'Prodigal Explorer': ['Ezreal']
 }
 
 async function main() {
@@ -163,6 +185,7 @@ async function main() {
         name_en: names?.en ?? code,
         name_fr: names?.fr ?? code,
         total_cards: totalCards,
+        release_date: SET_RELEASE_DATES[code] ?? null,
       },
       { onConflict: 'code' },
     )
@@ -194,6 +217,7 @@ async function main() {
         image_url: c.image,
         is_signed: c.variant === 'star',
         is_overnumbered: c.collector_number > (setTotals.get(c.set_id) ?? c.collector_number),
+        alt_names: CARD_ALIASES[c.name] ?? [],
       }
     })
 

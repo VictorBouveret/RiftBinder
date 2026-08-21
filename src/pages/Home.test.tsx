@@ -20,9 +20,8 @@ describe('Home', () => {
     expect(await screen.findByText('Accueil')).toBeInTheDocument()
   })
 
-  it('affiche les boutons de connexion quand personne n’est connecté', async () => {
+  it('affiche la barre de recherche', async () => {
     renderHome()
-    expect(await screen.findByText('Se connecter')).toBeInTheDocument()
-    expect(await screen.findByText('Créer un compte')).toBeInTheDocument()
+    expect(await screen.findByPlaceholderText('Rechercher une carte')).toBeInTheDocument()
   })
 })

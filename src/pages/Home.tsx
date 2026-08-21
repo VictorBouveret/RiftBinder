@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
@@ -33,7 +34,7 @@ function useCardSearch(query: string) {
     supabase
       .from('cards')
       .select('id, external_id, name, collector_number, variant, set:sets(code)')
-      .ilike('name', `%${debounced}%`)
+      .ilike('search_text', `%${debounced}%`)
       .order('name')
       .limit(20)
       .then(({ data, error }) => {
@@ -150,10 +151,10 @@ function getLocalizedSetName(set: CardSet, language: string | undefined): string
   return set.name_en ?? set.name
 }
 
-function groupSetsByYear(sets: CardSet[]) {
+function groupSetsByYear(sets: CardSet[], unknownYearLabel: string) {
   const groups = new Map<string, CardSet[]>()
   for (const set of sets) {
-    const year = set.release_date ? set.release_date.slice(0, 4) : 'Année inconnue'
+    const year = set.release_date ? set.release_date.slice(0, 4) : unknownYearLabel
     const existing = groups.get(year) ?? []
     existing.push(set)
     groups.set(year, existing)
@@ -162,7 +163,8 @@ function groupSetsByYear(sets: CardSet[]) {
 }
 
 export function Home() {
-  const { user, signOut } = useAuth()
+  const { t } = useTranslation()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [setSearch, setSetSearch] = useState('')
@@ -191,77 +193,30 @@ export function Home() {
           getLocalizedSetName(s, profile?.language).toLowerCase().includes(setSearch.trim().toLowerCase()),
         )
       : sets
-    return groupSetsByYear(filtered)
-  }, [sets, setSearch, profile?.language])
+    return groupSetsByYear(filtered, t('home.unknownYear'))
+  }, [sets, setSearch, profile?.language, t])
 
   function goToCardsByName(name: string) {
     navigate(`/cards?name=${encodeURIComponent(name)}`)
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 px-4 py-6 text-zinc-100">
-      <div className="mx-auto max-w-3xl">
-        <header className="mb-6 flex items-center justify-between">
-          <span className="text-lg font-medium">Accueil</span>
-          {user ? (
-            <div className="flex items-center gap-2">
-              <Link
-                to="/settings"
-                className="rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300"
-              >
-                {profile?.language.toUpperCase() ?? '…'}
-              </Link>
-              <Link
-                to="/settings"
-                className="rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300"
-              >
-                {profile?.currency ?? '…'}
-              </Link>
-              <div className="mx-1 h-5 w-px bg-zinc-800" />
-              <Link
-                to="/settings"
-                aria-label="Paramètres"
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-800 text-zinc-300"
-              >
-                ⚙
-              </Link>
-              <button
-                onClick={() => signOut()}
-                className="rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300"
-              >
-                Se déconnecter
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                to="/login"
-                className="rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-300"
-              >
-                Se connecter
-              </Link>
-              <Link
-                to="/signup"
-                className="rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-900"
-              >
-                Créer un compte
-              </Link>
-            </div>
-          )}
-        </header>
+    <div className="px-4 py-6 text-zinc-100">
+      <div className="mx-auto max-w-6xl">
+        <h1 className="mb-6 text-lg font-medium">{t('home.title')}</h1>
 
         <div className="relative mb-6">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher une carte (nom ou numéro)"
+            placeholder={t('common.search')}
             className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none focus:border-zinc-500"
           />
           {isSearching && (
             <div className="absolute left-0 right-0 top-11 z-10 overflow-hidden rounded-md border border-zinc-800 bg-zinc-900">
               {uniqueNames.length === 0 && (
-                <p className="px-3 py-2 text-xs text-zinc-500">Aucun résultat.</p>
+                <p className="px-3 py-2 text-xs text-zinc-500">{t('home.noResults')}</p>
               )}
               {uniqueNames.map((name) => (
                 <button
@@ -294,32 +249,30 @@ export function Home() {
             to="/collection"
             className="flex h-32 flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900 p-4"
           >
-            <span className="text-sm font-medium">Ma collection</span>
+            <span className="text-sm font-medium">{t('home.myCollection')}</span>
             <span className="text-xs text-zinc-400">
               {user
-                ? `${ownedCount ?? '…'} sur ${totalCards ?? '…'} cartes possédées`
-                : 'Connecte-toi pour voir ta collection'}
+                ? t('home.ownedCount', { owned: ownedCount ?? '…', total: totalCards ?? '…' })
+                : t('home.loginToView')}
             </span>
           </Link>
           <Link
             to="/wishlist"
             className="flex h-32 flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900 p-4"
           >
-            <span className="text-sm font-medium">Ma wishlist</span>
+            <span className="text-sm font-medium">{t('home.myWishlist')}</span>
             <span className="text-xs text-zinc-400">
-              {user
-                ? `${wishlistCount ?? '…'} cartes en attente`
-                : 'Connecte-toi pour voir ta wishlist'}
+              {user ? t('home.wishlistCount', { count: wishlistCount ?? '…' }) : t('home.loginToViewWishlist')}
             </span>
           </Link>
         </div>
 
-        <h2 className="mb-3 text-base font-medium">Séries</h2>
+        <h2 className="mb-3 text-base font-medium">{t('home.series')}</h2>
         <input
           type="text"
           value={setSearch}
           onChange={(e) => setSetSearch(e.target.value)}
-          placeholder="Rechercher une série"
+          placeholder={t('home.searchSeries')}
           className="mb-3 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none focus:border-zinc-500"
         />
 
@@ -345,7 +298,7 @@ export function Home() {
             </div>
           ))}
           {filteredSetGroups.length === 0 && (
-            <p className="text-xs text-zinc-500">Aucune série trouvée.</p>
+            <p className="text-xs text-zinc-500">{t('home.noSeriesFound')}</p>
           )}
         </div>
       </div>
